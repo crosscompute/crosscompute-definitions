@@ -554,49 +554,6 @@ display:
     - id: output
       design: none
 
-# authorization restricts user access to your tool
-authorization:
-  # tokens are api keys for your tool;
-  # each token defines an identity
-  tokens:
-    # path specifies the location of a yaml file;
-    # the file should have tokens as keys and configuration settings as values;
-    # abcd:
-    #   role_name: admin
-    #   town_name: Springfield
-    # bcde:
-    #   role_name: leader
-    #   town_name: Branson
-    # cdef:
-    #   role_name: member
-    #   town_name: Mansfield
-    - path: tokens.yaml
-  # groups define permissions
-  groups:
-    # configuration settings define how a group matches an identity;
-    # permission ids specify which privileges the identity can access
-    - configuration:
-        role_name: owner
-      permissions:
-        - id: add_token
-        - id: see_root
-        - id: see_tool
-        - id: see_preset
-        - id: run_tool
-    # note that the value for each configuration setting can also be a list;
-    # then an identity will match this group if its setting matches a value
-    - configuration:
-        role_name: member
-      permissions:
-        - id: see_root
-        - id: see_tool
-        - id: see_preset
-          # action match is specific to the permission see_preset;
-          # in the example above, suppose that a user uses the token cdef;
-          # then the user will have town_name Mansfield and
-          # can only see presets whose input variable town_name is Mansfield
-          action: match
-
 # compatibility restricts worker access to your tool
 compatibility:
   # workers restrict access to specific workers;
