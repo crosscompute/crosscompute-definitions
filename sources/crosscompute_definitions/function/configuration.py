@@ -725,7 +725,7 @@ async def validate_execution_variables(d):
     variable_definitions = [await ExecutionVariableDefinition.load(
         _) for _ in variable_maps]
     assert_unique_values(
-        [(_['id'], _['stage_name']) for _ in variable_definitions],
+        [(_.id, _.stage_name) for _ in variable_definitions],
         'execution variable id "{x}"')
     return {'variable_definitions': variable_definitions}
 
