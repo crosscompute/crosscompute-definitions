@@ -62,3 +62,11 @@ class CrossComputeConfigurationError(CrossComputeError):
 
 class CrossComputeDataError(CrossComputeError):
     pass
+
+
+class CrossComputeExecutionError(CrossComputeError):
+    pass
+
+
+class CrossComputeConnectionError(CrossComputeError):
+    pass
