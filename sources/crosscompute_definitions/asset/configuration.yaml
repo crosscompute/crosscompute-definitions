@@ -494,8 +494,15 @@ execution:
   # variables are environment variables needed by your scripts
   variables:
     # id is the environment variable to expose at a specific stage
+    - id: RANDOM_TOKEN
+      stage: setup
+    # type ssh fills SSH_AUTH_SOCK from a base64 encoded key during setup only
     - id: GITHUB_KEY
       stage: setup
+      type: ssh
+    - id: GITLAB_KEY
+      stage: setup
+      type: ssh
     - id: GOOGLE_KEY
       stage: run
   # concurrency defines how your presets run;

@@ -796,15 +796,26 @@ async def validate_step_variable_configuration(d):
 async def validate_execution_variable_identifiers(d):
     variable_id = get_required_string(d, 'id', 'variable')
     stage_name = get_optional_string(d, 'stage', 'variable', 'run')
-    if stage_name not in STAGE_NAMES:
-        stage_names_string = ', '.join(STAGE_NAMES)
+    type_name = get_optional_string(d, 'type', 'variable', 'secret')
+    if stage_name not in EXECUTION_STAGE_NAMES:
+        stage_names_string = ', '.join(EXECUTION_STAGE_NAMES)
         x = (
             f'variable stage "{stage_name}" is not supported; '
             f'expected {stage_names_string}')
         raise CrossComputeConfigurationError(x)
+    if type_name not in VARIABLE_TYPE_NAMES:
+        type_names_string = ', '.join(VARIABLE_TYPE_NAMES)
+        x = (
+            f'variable type "{type_name}" is not supported; '
+            f'expected {type_names_string}')
+        raise CrossComputeConfigurationError(x)
+    if stage_name != 'setup' and type_name == 'ssh':
+        x = 'variable type "ssh" is only available in stage "setup"'
+        raise CrossComputeConfigurationError(x)
     return {
         'id': variable_id,
-        'stage_name': stage_name}
+        'stage_name': stage_name,
+        'type_name': type_name}
 
 
 async def validate_template_identifiers(d):
@@ -908,8 +919,8 @@ async def validate_api_identifiers(d):
     domain = get_required_string(d, 'domain', 'api')
     domain = DOMAIN_PATTERN.sub('', domain.lower()).strip('.-')
     stage_name = get_required_string(d, 'stage', 'api')
-    if stage_name not in STAGE_NAMES:
-        stage_names_string = ', '.join(STAGE_NAMES)
+    if stage_name not in EXECUTION_STAGE_NAMES:
+        stage_names_string = ', '.join(EXECUTION_STAGE_NAMES)
         x = (
             f'stage "{stage_name}" is not supported; '
             f'expected {stage_names_string}')
@@ -1181,7 +1192,8 @@ def assert_unique_values(values, description):
 YIELD_DATA_BY_ID_BY_SUFFIX = {
     '.csv': yield_data_by_id_from_csv,
     '.txt': yield_data_by_id_from_txt}
-STAGE_NAMES = ['setup', 'run']
+EXECUTION_STAGE_NAMES = ['setup', 'run']
+VARIABLE_TYPE_NAMES = ['secret', 'ssh']
 SCRIPT_SUFFIXES = ['.py', '.ipynb', '.sh']
 SCRIPT_LANGUAGES = ['python']
 L = getLogger(__name__)

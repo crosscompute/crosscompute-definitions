@@ -9,6 +9,7 @@ from crosscompute_definitions.error import (
     CrossComputeConfigurationError)
 from crosscompute_definitions.function.configuration import (
     Definition,
+    validate_execution_variable_identifiers,
     validate_paths,
     validate_steps)
 
@@ -52,3 +53,26 @@ async def test_validate_steps():
                 ],
             },
         })
+
+
+@pytest.mark.asyncio
+async def test_validate_execution_variable_identifiers():
+    with pytest.raises(CrossComputeConfigurationError):
+        await validate_execution_variable_identifiers({})
+    with pytest.raises(CrossComputeConfigurationError):
+        await validate_execution_variable_identifiers({
+            'id': 'x', 'stage': 'x'})
+    with pytest.raises(CrossComputeConfigurationError):
+        await validate_execution_variable_identifiers({
+            'id': 'x', 'stage': 'run', 'type': 'x'})
+    with pytest.raises(CrossComputeConfigurationError):
+        await validate_execution_variable_identifiers({
+            'id': 'x', 'stage': 'run', 'type': 'ssh'})
+    await validate_execution_variable_identifiers({
+        'id': 'x'})
+    await validate_execution_variable_identifiers({
+        'id': 'x', 'stage': 'setup'})
+    await validate_execution_variable_identifiers({
+        'id': 'x', 'stage': 'setup', 'type': 'ssh'})
+    await validate_execution_variable_identifiers({
+        'id': 'x', 'stage': 'run'})
