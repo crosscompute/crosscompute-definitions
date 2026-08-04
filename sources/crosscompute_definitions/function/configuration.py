@@ -796,7 +796,7 @@ async def validate_step_variable_configuration(d):
 async def validate_execution_variable_identifiers(d):
     variable_id = get_required_string(d, 'id', 'variable')
     stage_name = get_optional_string(d, 'stage', 'variable', 'run')
-    type_name = get_optional_string(d, 'type', 'variable', 'secret')
+    type_name = get_optional_string(d, 'type', 'variable', 'mount')
     if stage_name not in EXECUTION_STAGE_NAMES:
         stage_names_string = ', '.join(EXECUTION_STAGE_NAMES)
         x = (
@@ -808,9 +808,6 @@ async def validate_execution_variable_identifiers(d):
         x = (
             f'variable type "{type_name}" is not supported; '
             f'expected {type_names_string}')
-        raise CrossComputeConfigurationError(x)
-    if stage_name != 'setup' and type_name == 'ssh':
-        x = 'variable type "ssh" is only available in stage "setup"'
         raise CrossComputeConfigurationError(x)
     return {
         'id': variable_id,
@@ -1192,8 +1189,8 @@ def assert_unique_values(values, description):
 YIELD_DATA_BY_ID_BY_SUFFIX = {
     '.csv': yield_data_by_id_from_csv,
     '.txt': yield_data_by_id_from_txt}
-EXECUTION_STAGE_NAMES = ['setup', 'run']
-VARIABLE_TYPE_NAMES = ['secret', 'ssh']
+EXECUTION_STAGE_NAMES = ['setup-root', 'setup-user', 'run']
+VARIABLE_TYPE_NAMES = ['file', 'environment']
 SCRIPT_SUFFIXES = ['.py', '.ipynb', '.sh']
 SCRIPT_LANGUAGES = ['python']
 L = getLogger(__name__)

@@ -64,15 +64,14 @@ async def test_validate_execution_variable_identifiers():
             'id': 'x', 'stage': 'x'})
     with pytest.raises(CrossComputeConfigurationError):
         await validate_execution_variable_identifiers({
-            'id': 'x', 'stage': 'run', 'type': 'x'})
-    with pytest.raises(CrossComputeConfigurationError):
-        await validate_execution_variable_identifiers({
-            'id': 'x', 'stage': 'run', 'type': 'ssh'})
+            'id': 'x', 'stage': 'setup-user', 'type': 'x'})
     await validate_execution_variable_identifiers({
         'id': 'x'})
     await validate_execution_variable_identifiers({
-        'id': 'x', 'stage': 'setup'})
+        'id': 'x', 'stage': 'setup-root'})
     await validate_execution_variable_identifiers({
-        'id': 'x', 'stage': 'setup', 'type': 'ssh'})
+        'id': 'x', 'stage': 'setup-root', 'type': 'env'})
     await validate_execution_variable_identifiers({
-        'id': 'x', 'stage': 'run'})
+        'id': 'x', 'stage': 'setup-user'})
+    await validate_execution_variable_identifiers({
+        'id': 'x', 'stage': 'setup-user', 'type': 'env'})
