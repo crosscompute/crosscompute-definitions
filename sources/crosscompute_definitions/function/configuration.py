@@ -795,24 +795,24 @@ async def validate_step_variable_configuration(d):
 
 async def validate_execution_variable_identifiers(d):
     variable_id = get_required_string(d, 'id', 'variable')
-    stage_name = get_optional_string(d, 'stage', 'variable', 'run')
-    type_name = get_optional_string(d, 'type', 'variable', 'mount')
+    stage_name = get_required_string(d, 'stage', 'variable')
+    target_name = get_required_string(d, 'target', 'variable')
     if stage_name not in EXECUTION_STAGE_NAMES:
         stage_names_string = ', '.join(EXECUTION_STAGE_NAMES)
         x = (
             f'variable stage "{stage_name}" is not supported; '
             f'expected {stage_names_string}')
         raise CrossComputeConfigurationError(x)
-    if type_name not in VARIABLE_TYPE_NAMES:
-        type_names_string = ', '.join(VARIABLE_TYPE_NAMES)
+    if target_name not in VARIABLE_TARGET_NAMES:
+        target_names_string = ', '.join(VARIABLE_TARGET_NAMES)
         x = (
-            f'variable type "{type_name}" is not supported; '
-            f'expected {type_names_string}')
+            f'variable target "{target_name}" is not supported; '
+            f'expected {target_names_string}')
         raise CrossComputeConfigurationError(x)
     return {
         'id': variable_id,
         'stage_name': stage_name,
-        'type_name': type_name}
+        'target_name': target_name}
 
 
 async def validate_template_identifiers(d):
@@ -1190,7 +1190,7 @@ YIELD_DATA_BY_ID_BY_SUFFIX = {
     '.csv': yield_data_by_id_from_csv,
     '.txt': yield_data_by_id_from_txt}
 EXECUTION_STAGE_NAMES = ['setup-root', 'setup-user', 'run']
-VARIABLE_TYPE_NAMES = ['file', 'environment']
+VARIABLE_TARGET_NAMES = ['file', 'environment']
 SCRIPT_SUFFIXES = ['.py', '.ipynb', '.sh']
 SCRIPT_LANGUAGES = ['python']
 L = getLogger(__name__)

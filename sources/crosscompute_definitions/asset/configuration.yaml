@@ -493,28 +493,23 @@ execution:
       number: 8888
   # variables are secrets needed by your scripts
   variables:
-    # id cites the variable in your scripts
-    # stage specifies when to expose the variable
+    # id cites the variable in your scripts (required);
+    # stage specifies when to expose the variable (required);
+    # target indicates where to expose the variable (required);
+    # target == file exposes the variable as a file in the debug folder;
+    # target == environment exposes the variable in the environment
     - id: EXAMPLE_SETUP_KEY_A
       stage: setup-root
-    # type file exposes the variable in the debug folder (default)
+      target: file
     - id: EXAMPLE_SETUP_KEY_B
-      stage: setup-root
-      type: file
-    # type environment exposes the variable in the environment
-    - id: EXAMPLE_SETUP_KEY_C
       stage: setup-user
-      type: environment
+      target: environment
     - id: EXAMPLE_RUN_KEY_A
       stage: run
-    # type file exposes the variable in the debug folder (default)
+      target: file
     - id: EXAMPLE_RUN_KEY_B
       stage: run
-      type: file
-    # type environment exposes the variable in the environment
-    - id: EXAMPLE_RUN_KEY_C
-      stage: run
-      type: environment
+      target: environment
   # concurrency defines how your presets run;
   # thread runs each preset as a separate thread;
   # process runs each preset as a separate process;
