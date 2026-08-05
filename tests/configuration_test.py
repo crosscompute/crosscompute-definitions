@@ -61,17 +61,22 @@ async def test_validate_execution_variable_identifiers():
         await validate_execution_variable_identifiers({})
     with pytest.raises(CrossComputeConfigurationError):
         await validate_execution_variable_identifiers({
+            'id': 'x'})
+    with pytest.raises(CrossComputeConfigurationError):
+        await validate_execution_variable_identifiers({
             'id': 'x', 'stage': 'x'})
     with pytest.raises(CrossComputeConfigurationError):
         await validate_execution_variable_identifiers({
-            'id': 'x', 'stage': 'setup-user', 'type': 'x'})
+            'id': 'x', 'stage': 'setup-user', 'target': 'x'})
     await validate_execution_variable_identifiers({
-        'id': 'x'})
+        'id': 'x', 'stage': 'setup-root', 'target': 'file'})
     await validate_execution_variable_identifiers({
-        'id': 'x', 'stage': 'setup-root'})
+        'id': 'x', 'stage': 'setup-root', 'target': 'environment'})
     await validate_execution_variable_identifiers({
-        'id': 'x', 'stage': 'setup-root', 'type': 'env'})
+        'id': 'x', 'stage': 'setup-user', 'target': 'file'})
     await validate_execution_variable_identifiers({
-        'id': 'x', 'stage': 'setup-user'})
+        'id': 'x', 'stage': 'setup-user', 'target': 'environment'})
     await validate_execution_variable_identifiers({
-        'id': 'x', 'stage': 'setup-user', 'type': 'env'})
+        'id': 'x', 'stage': 'run', 'target': 'file'})
+    await validate_execution_variable_identifiers({
+        'id': 'x', 'stage': 'run', 'target': 'environment'})
