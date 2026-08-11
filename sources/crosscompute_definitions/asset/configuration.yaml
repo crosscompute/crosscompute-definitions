@@ -67,8 +67,8 @@ prices:
     currency: xno
   - tier: premium
     account: nano_abc
-    # period == each means pay-per-use
-    period: each
+    # period == none means pay-per-use
+    period: none
     amount: 10
     currency: xno
 
