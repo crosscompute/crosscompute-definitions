@@ -27,33 +27,53 @@ copyrights:
 
 # network declares how your server coordinates with other servers
 network:
+  ssl:
+    certificate:
+      path: cert.pem
+    key:
+      path: key.pem
+  prk: YOUR_B64_PRIVATE_KEY
   # markets are storefronts for tools
   markets:
     - uri: https://crosscompute.net
-    - path: market-uris.txt
+      puk: THEIR_B64_PUBLIC_KEY
+    - uri: https://example.com/markets.yaml
+    - path: markets.yaml
   # peers are other servers that can send, receive or run tools
   peers:
-    - uri: https://example.com/peer-uris.txt
-    - path: peer-uris.txt
-  # keys are public keys used to authenticate markets and peers
-  keys:
-    - uri: https://example.com/network-keys.txt
-    - path: network-keys.txt
+    - uri: 11.11.11.11:5000
+      puk: THEIR_B64_PUBLIC_KEY
+    - uri: "[2001:db8:85a3:8d3:1319:8a2e:370:7348]:7000"
+      puk: THEIR_B64_PUBLIC_KEY
+    - uri: https://example.com/peers.yaml
+    - path: peers.yaml
 
-# pricing specifies how you want to price your tool or kit
-pricing:
+# prices specifies how you want to price your tool or kit
+prices:
+  # tier is the name of your price tier
   # account is where the customer sends your subscription payment
-  account: nano_abc
   # period is how often the customer needs to send payment
-  period: month
   # amount is how much the customer needs to send
-  amount: 100
   # currency is the ISO 4217 code or cryptocurrency abbreviation
-  currency: xno
+  - tier: standard
+    account: nano_abc
+    period: month
+    amount: 100
+    currency: xno
+  - tier: standard
+    account: nano_abc
+    period: year
+    amount: 1000
+    currency: xno
+  - tier: premium
+    account: nano_abc
+    # period == each means pay-per-use
+    period: each
+    amount: 10
+    currency: xno
 
 # tools let you include other tools and define a kit
 tools:
-
   # path specifies the location of the tool to include
   - path: add-numbers/automate.yaml
 
@@ -141,13 +161,6 @@ input:
       view: number
       path: variables.dictionary
       label: What is your age?
-    - id: secret_code
-      view: password
-      path: ENVIRONMENT
-      label: What is your secret code?
-    - id: support_email
-      view: email
-      path: ENVIRONMENT
     - id: problem_description
       view: text
       path: problem.txt
