@@ -30,7 +30,7 @@ KIT_NAME = 'Kit X'
 TOOL_VERSION = '0.0.0'
 
 
-STEP_NAMES = 'input', 'log', 'output', 'debug', 'print'
+STEP_NAMES = 'input', 'log', 'output', 'print', 'debug'
 
 
 VARIABLE_ID_PATTERN = re.compile(r'[a-zA-Z0-9_]+$')
