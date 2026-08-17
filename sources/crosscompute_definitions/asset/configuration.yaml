@@ -476,12 +476,6 @@ execution:
   engine: podman
   # image is the container used to run your scripts when using podman engine
   image: python:slim
-  # setup specifies setup scripts by user when using podman engine
-  setup:
-    root:
-      path: setup-root.sh
-    user:
-      path: setup-user.sh
   # packages are dependencies required by your scripts;
   # engine=unsafe will install the packages directly on your machine;
   # engine=podman will install the packages in the container image
@@ -500,6 +494,12 @@ execution:
       manager: dnf
     - id: libgeos-dev
       manager: apt
+  # setup specifies setup scripts by user when using podman engine
+  setup:
+    root:
+      path: setup-root.sh
+    user:
+      path: setup-user.sh
   # apis specify which domains to allow at which stage
   apis:
     - domain: pypi.org
