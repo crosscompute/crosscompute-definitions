@@ -887,7 +887,7 @@ async def validate_page_identifiers(d):
     elif page_id in ['input', 'output', 'log', 'debug']:
         if not design_name:
             design_name = 'flex'
-        if design_name not in ['flex', 'accordion', 'bare', 'none']:
+        if design_name not in ['flex', 'accordion', 'none']:
             x = f'tool design "{design_name}" is not supported'
             raise CrossComputeConfigurationError(x)
     else:
