@@ -20,7 +20,7 @@ version: 0.0.0
 
 # copyrights declare who owns this tool or kit
 copyrights:
-  - name: CrossCompute
+  - name: CrossCompute Inc.
     slug: crosscompute
     years:
       - 2024
