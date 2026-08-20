@@ -754,8 +754,10 @@ async def validate_step_variable_identifiers(d):
     variable_id = get_required_string(d, 'id', 'variable')
     view_name = get_required_string(d, 'view', 'variable')
     path_name = get_required_string(d, 'path', 'variable')
-    mode_name = d.get('mode', '').strip()
-    label_text = d.get('label', format_name(variable_id)).strip()
+    level_name = get_optional_string(d, 'level', 'variable', f=str.upper)
+    mode_name = get_optional_string(d, 'mode', 'variable')
+    label_text = get_optional_string(d, 'label', 'variable', format_name(
+        variable_id))
     if not VARIABLE_ID_PATTERN.match(variable_id):
         x = (
             'variable id is not valid; please use '
@@ -771,16 +773,19 @@ async def validate_step_variable_identifiers(d):
             f'variable path "{path_name}" must be within the '
             'folder')
         raise CrossComputeConfigurationError(x, variable_id=variable_id)
+    if level_name and level_name not in VARIABLE_LEVEL_NAMES:
+        x = make_error_string(
+            'variable level', level_name, VARIABLE_LEVEL_NAMES)
+        raise CrossComputeConfigurationError(x, variable_id=variable_id)
     if mode_name and mode_name not in VARIABLE_MODE_NAMES:
-        mode_names_string = ', '.join(VARIABLE_MODE_NAMES)
-        x = (
-            f'variable mode "{mode_name}" is not supported; '
-            f'expected {mode_names_string}')
+        x = make_error_string(
+            'variable mode', mode_name, VARIABLE_MODE_NAMES)
         raise CrossComputeConfigurationError(x, variable_id=variable_id)
     return {
         'id': variable_id,
         'view_name': view_name,
         'path_name': path_name,
+        'level_name': level_name,
         'mode_name': mode_name,
         'label_text': label_text}
 
@@ -1082,12 +1087,16 @@ def get_required_string(d, k, x):
     return value
 
 
-def get_optional_string(d, k, x, v=None):
-    try:
-        value = d.get(k, v).strip()
-    except AttributeError as e:
-        m = f'{x} {k} must be a string'
-        raise CrossComputeConfigurationError(m) from e
+def get_optional_string(d, k, x, v=None, f=None):
+    value = d.get(k, v)
+    if value is not None:
+        try:
+            value = value.strip()
+        except AttributeError as e:
+            m = f'{x} {k} must be a string'
+            raise CrossComputeConfigurationError(m) from e
+        if f:
+            value = f(value)
     return value
 
 
@@ -1189,9 +1198,17 @@ def assert_unique_values(values, description):
                 description.format(x=x) + ' is not unique')
 
 
+def make_error_string(description, value, choices):
+    choices_string = ', '.join(choices)
+    return (
+        f'{description} "{value}" is not supported; '
+        f'expected {choices_string}')
+
+
 YIELD_DATA_BY_ID_BY_SUFFIX = {
     '.csv': yield_data_by_id_from_csv,
     '.txt': yield_data_by_id_from_txt}
+VARIABLE_LEVEL_NAMES = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
 VARIABLE_MODE_NAMES = ['input']
 EXECUTION_STAGE_NAMES = ['setup-root', 'setup-user', 'run']
 VARIABLE_TARGET_NAMES = ['file', 'environment']
