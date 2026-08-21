@@ -441,9 +441,6 @@ async def validate_steps(d):
         variable_ids = [_.id for _ in step_definition.variable_definitions]
         assert_unique_values(variable_ids, 'variable id "{x}"')
         tool_variable_ids.extend(variable_ids)
-    if 'return_code' in tool_variable_ids:
-        x = '"return_code" is a reserved variable'
-        raise CrossComputeConfigurationError(x)
     return {'step_definition_by_name': step_definition_by_name}
 
 
