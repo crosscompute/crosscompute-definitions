@@ -200,10 +200,11 @@ input:
       view: file
       path: photo{index}{suffix}
       configuration:
-        mime-types:
-          - image/jpeg
-          - image/png
-          - image/svg+xml
+        accept-types:
+          - value: image/jpeg
+          - value: image/png
+          - value: image/svg+xml
+          - value: .heif
     - id: region
       view: map-mapbox-location
       path: variables.dictionary
