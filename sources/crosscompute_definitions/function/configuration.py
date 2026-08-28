@@ -129,6 +129,13 @@ class CopyrightDefinition(Definition):
             validate_copyright_identifiers])
 
 
+class CopyrightYearDefinition(Definition):
+
+    async def _initialize(self, **kwargs):  # noqa: ARG002
+        self._validation_functions.extend([
+            validate_copyright_year_identifiers])
+
+
 class StepDefinition(Definition):
 
     async def _initialize(self, **kwargs):
@@ -516,11 +523,21 @@ async def validate_display(d):
 async def validate_copyright_identifiers(d):
     copyright_name = get_required_string(d, 'name', 'copyright')
     copyright_slug = get_required_string(d, 'slug', 'copyright')
-    copyright_years = get_required_integers(d, 'years', 'copyright')
+    year_definitions = [await CopyrightYearDefinition.load(
+        _) for _ in get_maps(d, 'years')]
+    if not year_definitions:
+        x = 'no copyright years found; define at least one year'
+        raise CrossComputeConfigurationError(x)
     return {
         'name': copyright_name,
         'slug': copyright_slug,
-        'years': copyright_years}
+        'year_definitions': year_definitions}
+
+
+async def validate_copyright_year_identifiers(d):
+    value = get_required_integer(d, 'value', 'year')
+    return {
+        'value': value}
 
 
 async def validate_step_variables(d):
@@ -858,12 +875,7 @@ async def validate_package_identifiers(d):
 
 async def validate_port_identifiers(d):
     port_id = get_required_string(d, 'id', 'port')
-    port_number = get_required_string(d, 'number', 'port')
-    try:
-        port_number = int(port_number)
-    except ValueError as e:
-        x = f'port number "{port_number}" must be an integer'
-        raise CrossComputeConfigurationError(x) from e
+    port_number = get_required_integer(d, 'number', 'port')
     return {
         'id': port_id,
         'number': port_number}
@@ -1069,6 +1081,18 @@ def process_page_number_options(variable_id, print_configuration):
         raise CrossComputeConfigurationError(x, variable_id=variable_id)
 
 
+def get_required_integer(d, k, x):
+    try:
+        value = int(d[k])
+    except KeyError as e:
+        m = f'{x} {k} is required'
+        raise CrossComputeConfigurationError(m) from e
+    except (TypeError, ValueError) as e:
+        m = f'{x} {k} must be an integer'
+        raise CrossComputeConfigurationError(m) from e
+    return value
+
+
 def get_required_string(d, k, x):
     try:
         value = d[k].strip()
@@ -1095,30 +1119,6 @@ def get_optional_string(d, k, x, v=None, f=None):
         if f:
             value = f(value)
     return value
-
-
-def get_required_integer(d, k, x):
-    try:
-        value = int(d[k])
-    except KeyError as e:
-        m = f'{x} {k} is required'
-        raise CrossComputeConfigurationError(m) from e
-    except (TypeError, ValueError) as e:
-        m = f'{x} {k} must be an integer'
-        raise CrossComputeConfigurationError(m) from e
-    return value
-
-
-def get_required_integers(d, k, x):
-    try:
-        values = [int(_) for _ in get_list(d, k)]
-    except (TypeError, ValueError) as e:
-        m = f'{x} {k} must be integers'
-        raise CrossComputeConfigurationError(m) from e
-    if not values:
-        m = f'{x} {k} are required'
-        raise CrossComputeConfigurationError(m)
-    return values
 
 
 def get_maps(d, k):
