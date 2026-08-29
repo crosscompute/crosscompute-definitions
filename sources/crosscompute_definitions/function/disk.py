@@ -7,7 +7,7 @@ from crosscompute_macros.disk import (
 
 async def get_matching_paths(path_template):
     path = PurePath(path_template)
-    expression = path.name.format(suffix='.*', index='[0-9]+')
+    expression = path.name.format(index='[0-9]+', suffix='.*')
     folder = path.parent
     paths = await list_paths(folder)
     pattern = re.compile(expression + '$')

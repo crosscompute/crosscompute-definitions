@@ -28,9 +28,6 @@ from .disk import (
 async def load_variable_data_by_id(folder, variables):
     data_by_id = {}
     for variable in variables:
-        path_name = variable.path_name
-        if path_name == 'ENVIRONMENT':
-            continue
         try:
             variable_data = await load_variable_data(folder, variable)
         except CrossComputeDataError as e:
@@ -44,8 +41,6 @@ async def load_variable_data(
         folder, variable, *, with_configuration_path=True):
     variable_path = variable.path_name
     path = join(folder, variable_path)  # noqa: PTH118
-    if '{index}' in variable_path:
-        return {DATA_PATH: path}
     variable_id = variable.id
     try:
         raw_data = await raw_data_cache.get(path)
@@ -56,12 +51,12 @@ async def load_variable_data(
         variable_value_by_id = raw_data[DATA_VALUE]
         variable_data = load_variable_data_from(
             variable_value_by_id, variable_id)
-        await restore_data_configuration(
+        await _restore_data_configuration(
             variable_data, folder, variable, variable_value_by_id,
             with_configuration_path)
     elif with_configuration_path:
         variable_data = raw_data
-        await restore_data_configuration(
+        await _restore_data_configuration(
             variable_data, folder, variable, {}, with_configuration_path)
     else:
         variable_data = raw_data
@@ -81,7 +76,7 @@ def load_variable_data_from(variable_value_by_id, variable_id):
     return {DATA_VALUE: variable_value}
 
 
-async def restore_data_configuration(
+async def _restore_data_configuration(
         variable_data, folder, variable, variable_value_by_id,
         with_configuration_path):
     variable_configuration = variable.configuration
@@ -100,7 +95,8 @@ async def restore_data_configuration(
     if 'path' in variable_configuration:
         custom_path = join(  # noqa: PTH118
             folder, variable_configuration['path'])
-        await update_data_configuration(data_configuration, custom_path)
+        if custom_path != default_path:
+            await update_data_configuration(data_configuration, custom_path)
     if data_configuration:
         variable_data[DATA_CONFIGURATION] = data_configuration
 

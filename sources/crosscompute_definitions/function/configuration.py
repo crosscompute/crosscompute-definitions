@@ -787,6 +787,11 @@ async def validate_step_variable_identifiers(d):
             f'variable path "{path_name}" must be within the '
             'folder')
         raise CrossComputeConfigurationError(x, variable_id=variable_id)
+    if '{suffix}' in path_name and '{index}' not in path_name:
+        x = (
+            f'variable path "{path_name}" must include '
+            '{index} if {suffix} is present')
+        raise CrossComputeConfigurationError(x, variable_id=variable_id)
     if level_name and level_name not in VARIABLE_LEVEL_NAMES:
         x = make_error_string(
             'variable level', level_name, VARIABLE_LEVEL_NAMES)
