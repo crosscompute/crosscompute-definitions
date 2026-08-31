@@ -10,8 +10,6 @@ from crosscompute_macros.disk import (
 from crosscompute_macros.error import (
     DiskError,
     ParsingError)
-from crosscompute_views.base import (
-    LoadableVariableView)
 
 from ..constant import (
     DATA_CONFIGURATION,
@@ -21,8 +19,35 @@ from ..constant import (
     RAW_DATA_CACHE_LENGTH)
 from ..error import (
     CrossComputeDataError)
+from ..setting import (
+    view_by_name)
 from .disk import (
     get_matching_paths)
+
+
+class LoadableVariableView:
+
+    name = 'variable'
+
+    @classmethod
+    def get_from(Class, variable):
+        view_name = variable.view_name
+        try:
+            View = view_by_name[view_name]
+        except KeyError:
+            L.error(
+                'view "%s" is not installed and is needed by variable "%s"',
+                view_name, variable.id)
+            View = Class
+        return View(variable)
+
+    def __init__(self, variable):
+        variable_id = variable.id
+        self.variable = variable
+        self.configuration_name = f'{variable_id}.configuration'
+
+    async def parse(self, data):
+        return data
 
 
 async def load_variable_data_by_id(folder, variables):
@@ -49,10 +74,9 @@ async def load_variable_data(
     configuration = {}
     configuration_name = f'{variable_id}.configuration'
     if path.endswith('.dictionary'):
-        variable_value_by_id = variable_data[DATA_VALUE]
-        variable_data = load_variable_data_from(
-            variable_value_by_id, variable_id)
-        v = variable_value_by_id.get(configuration_name, {})
+        value_by_id = variable_data[DATA_VALUE]
+        variable_data = load_variable_data_from(value_by_id, variable_id)
+        v = value_by_id.get(configuration_name, {})
         if isinstance(v, dict):
             configuration.update(v)
         else:
@@ -63,11 +87,12 @@ async def load_variable_data(
             configuration.update(await load_raw_json(configuration_path))
         except (DiskError, ParsingError) as e:
             L.error(e)
+    view = LoadableVariableView.get_from(variable)
     if DATA_VALUE in variable_data:
-        variable_data[DATA_VALUE] = await LoadableVariableView.get_from(
-            variable).parse(variable_data[DATA_VALUE])
+        variable_data[DATA_VALUE] = await view.parse(variable_data[DATA_VALUE])
     if configuration:
-        variable_data[DATA_CONFIGURATION] = configuration
+        variable_data[DATA_CONFIGURATION] = view.parse_configuration(
+            configuration)
     return variable_data
 
 
