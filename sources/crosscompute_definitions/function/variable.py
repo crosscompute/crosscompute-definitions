@@ -15,11 +15,13 @@ from crosscompute_macros.log import (
 
 from ..constant import (
     DATA_CONFIGURATION,
+    DATA_CONFIGURATION_CACHE_LENGTH,
     DATA_PATH,
     DATA_VALUE,
     RAW_DATA_BYTE_COUNT,
     RAW_DATA_CACHE_LENGTH)
 from ..error import (
+    CrossComputeConfigurationError,
     CrossComputeDataError)
 from ..setting import (
     view_by_name)
@@ -46,8 +48,26 @@ class LoadableVariableView:
     def __init__(self, variable):
         self.variable = variable
 
-    async def parse(self, data):
-        return data
+    async def parse_value_safely(self, v, w):
+        try:
+            return await self.parse_value(v)
+        except CrossComputeDataError as e:
+            L.error(f'variable value parse failed during {w}: {e}')
+
+    async def parse_value(self, x):
+        return x
+
+    def parse_configuration_safely(self, c, w):
+        try:
+            return self.parse_configuration(c)
+        except CrossComputeConfigurationError as e:
+            L.error(f'variable configuration parse failed during {w}: {e}')
+
+    def parse_configuration(self, c):
+        if not isinstance(c, dict):
+            x = 'variable configuration must be a dictionary'
+            raise CrossComputeConfigurationError(x)
+        return c
 
 
 async def load_variable_data_by_id(folder, variables):
@@ -71,28 +91,31 @@ async def load_variable_data(
     except CrossComputeDataError as e:
         e.variable_id = variable_id
         raise
+    if path.endswith('.dictionary'):
+        variable_data = load_variable_data_from(
+            variable_data[DATA_VALUE], variable_id)
     configuration = {}
-    configuration_path = join(folder, variable.configuration_name)  # noqa: PTH118
-    if with_configuration_path and await is_existing_path(configuration_path):
-        configuration.update(
-                )
-        try:
-            d = await load_raw_json(configuration_path)
-        except (DiskError, ParsingError) as e:
-            L.error(e)
-        if isinstance(d, dict):
-            configuration.update(d)
-        else:
-            L.error(
-                'configuration must be a dictionary; '
-                f'path="{redact_path(configuration_path)}"')
+    configuration_path = get_variable_configuration_path(variable, folder)
+    if with_configuration_path:
+        configuration.update(await variable_configuration_cache.get(
+            configuration_path))
     view = LoadableVariableView.get_from(variable)
     if DATA_VALUE in variable_data:
-        variable_data[DATA_VALUE] = await view.parse(variable_data[DATA_VALUE])
+        value = await view.parse_value_safely(
+            variable_data[DATA_VALUE], 'load')
+        if value is not None:
+            variable_data[DATA_VALUE] = value
     if configuration:
-        variable_data[DATA_CONFIGURATION] = view.parse_configuration(
-            configuration)
+        configuration = view.parse_configuration_safely(
+            configuration, 'load')
+        if configuration:
+            variable_data[DATA_CONFIGURATION] = configuration
     return variable_data
+
+
+def get_variable_configuration_path(variable, folder):
+    variable_id = variable.id
+    return join(folder, f'{variable_id}.configuration')  # noqa: PTH118
 
 
 def load_variable_data_from(variable_value_by_id, variable_id):
@@ -151,7 +174,26 @@ async def load_file_data(path, load):
     return {DATA_VALUE: value}
 
 
+async def load_variable_configuration(path):
+    d = {}
+    if await is_existing_path(path):
+        try:
+            d = await load_raw_json(path)
+        except (DiskError, ParsingError) as e:
+            L.error(e)
+        else:
+            if not isinstance(d, dict):
+                L.error(
+                    'variable configuration must be a dictionary; '
+                    f'path="{redact_path(path)}"')
+                d = {}
+    return d
+
+
 raw_data_cache = FileCache(
     load=load_raw_data,
     length=RAW_DATA_CACHE_LENGTH)
+variable_configuration_cache = FileCache(
+    load=load_variable_configuration,
+    length=DATA_CONFIGURATION_CACHE_LENGTH)
 L = getLogger(__name__)
