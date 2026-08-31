@@ -153,7 +153,7 @@ input:
     # path specifies the file where your scripts load this variable (required);
     #   note that path is relative to the input folder;
     # label sets the label text above the variable view;
-    # configuration customizes the look and feel of the view
+    # configuration customizes the look and feel of the view;
     - id: town_name
       view: string
       path: variables.dictionary
@@ -267,7 +267,7 @@ output:
     - id: logo
       view: image
       path: logo.svg
-    - id: report
+    - id: report_pdf
       view: pdf
       path: example.pdf
     - id: demo
@@ -293,13 +293,30 @@ output:
     - id: identity
       view: barcode
       path: variables.dictionary
-    # Here the checkbox is configured dynamically from buildings.json
-    # and will render as input because of the mode override
-    - id: buildings
-      view: checkbox
-      path: buildings.txt
+    # Configure a view dynamically by writing `{variable_id}.configuration`;
+    # for example, writing `{"file-name": "report-20260830.pdf"}` to
+    # `report_link.configuration` in the output folder will update the
+    # downloaded file name to `report-20260830.pdf`
+    - id: report_link
+      view: link
+      path: report.pdf
       configuration:
-        path: buildings.json
+        link-text: report
+        file-name: report.pdf
+    # If the variable path is `variables.dictionary`, you can also configure
+    # the view dynamically by saving the configuration under the key
+    # `{variable_id}.configuration` directly inside `variables.dictionary`;
+    # for example, configure a checkbox dynamically by writing
+    # `{"options": [{"value": "a"}, {"value": "b"}, {"value": "c"}]}`
+    # under the key `building_type.configuration` in `variables.dictionary`;
+    # note that the variable will render as input because `mode == input`
+    - id: building_type
+      view: checkbox
+      path: variables.dictionary
+      configuration:
+        options:
+          - value: a
+          - value: b
       mode: input
   # output templates guide the user on how to interpret the output variables
   templates:
@@ -335,8 +352,6 @@ print:
       view: link
       path: report.pdf
       label: Report URI
-      configuration:
-        path: report-uri.json
 
 # debug is how your scripts record errors, warnings, logs
 debug:

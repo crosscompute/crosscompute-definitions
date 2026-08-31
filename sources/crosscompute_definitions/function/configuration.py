@@ -813,10 +813,10 @@ async def validate_step_variable_configuration(d):
     # TODO: Validate configuration according to variable view
     c = get_map(d, 'configuration')
     if 'path' in c:
-        p = c['path']
-        if not p.endswith('.json'):
-            x = f'variable configuration path "{p}" suffix must be ".json"'
-            raise CrossComputeConfigurationError(x)
+        x = (
+            'custom variable configuration paths have been deprecated; '
+            'save dynamic configuration to {variable_id}.configuration}')
+        raise CrossComputeConfigurationError(x)
     return {'configuration': c}
 
 

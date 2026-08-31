@@ -39,30 +39,35 @@ async def load_variable_data_by_id(folder, variables):
 
 async def load_variable_data(
         folder, variable, *, with_configuration_path=True):
-    variable_path = variable.path_name
-    path = join(folder, variable_path)  # noqa: PTH118
+    path = join(folder, variable.path_name)  # noqa: PTH118
     variable_id = variable.id
     try:
-        raw_data = await raw_data_cache.get(path)
+        variable_data = await raw_data_cache.get(path)
     except CrossComputeDataError as e:
         e.variable_id = variable_id
         raise
+    configuration = {}
+    configuration_name = f'{variable_id}.configuration'
     if path.endswith('.dictionary'):
-        variable_value_by_id = raw_data[DATA_VALUE]
+        variable_value_by_id = variable_data[DATA_VALUE]
         variable_data = load_variable_data_from(
             variable_value_by_id, variable_id)
-        await _restore_data_configuration(
-            variable_data, folder, variable, variable_value_by_id,
-            with_configuration_path)
-    elif with_configuration_path:
-        variable_data = raw_data
-        await _restore_data_configuration(
-            variable_data, folder, variable, {}, with_configuration_path)
-    else:
-        variable_data = raw_data
+        v = variable_value_by_id.get(configuration_name, {})
+        if isinstance(v, dict):
+            configuration.update(v)
+        else:
+            L.error(f'configuration must be a dictionary; {variable_id=}')
+    configuration_path = join(folder, configuration_name)  # noqa: PTH118
+    if with_configuration_path and await is_existing_path(configuration_path):
+        try:
+            configuration.update(await load_raw_json(configuration_path))
+        except (DiskError, ParsingError) as e:
+            L.error(e)
     if DATA_VALUE in variable_data:
         variable_data[DATA_VALUE] = await LoadableVariableView.get_from(
             variable).parse(variable_data[DATA_VALUE])
+    if configuration:
+        variable_data[DATA_CONFIGURATION] = configuration
     return variable_data
 
 
@@ -74,38 +79,6 @@ def load_variable_data_from(variable_value_by_id, variable_id):
         raise CrossComputeDataError(
             x, variable_id=variable_id) from e
     return {DATA_VALUE: variable_value}
-
-
-async def _restore_data_configuration(
-        variable_data, folder, variable, variable_value_by_id,
-        with_configuration_path):
-    variable_configuration = variable.configuration
-    data_configuration = {}
-    default_path = join(  # noqa: PTH118
-        folder, variable.path_name + '.configuration')
-    if variable_value_by_id:
-        variable_id = variable.id
-        v = variable_value_by_id.get(variable_id + '.configuration', {})
-        if isinstance(v, dict):
-            data_configuration.update(v)
-        else:
-            L.error(f'data configuration must be a dictionary; {variable_id=}')
-    elif with_configuration_path and await is_existing_path(default_path):
-        await update_data_configuration(data_configuration, default_path)
-    if 'path' in variable_configuration:
-        custom_path = join(  # noqa: PTH118
-            folder, variable_configuration['path'])
-        if custom_path != default_path:
-            await update_data_configuration(data_configuration, custom_path)
-    if data_configuration:
-        variable_data[DATA_CONFIGURATION] = data_configuration
-
-
-async def update_data_configuration(data_configuration, path):
-    try:
-        data_configuration.update(await load_raw_json(path))
-    except (DiskError, ParsingError) as e:
-        L.error(e)
 
 
 async def load_raw_data(path):
