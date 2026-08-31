@@ -10,6 +10,8 @@ from crosscompute_macros.disk import (
 from crosscompute_macros.error import (
     DiskError,
     ParsingError)
+from crosscompute_macros.log import (
+    redact_path)
 
 from ..constant import (
     DATA_CONFIGURATION,
@@ -42,9 +44,7 @@ class LoadableVariableView:
         return View(variable)
 
     def __init__(self, variable):
-        variable_id = variable.id
         self.variable = variable
-        self.configuration_name = f'{variable_id}.configuration'
 
     async def parse(self, data):
         return data
@@ -72,21 +72,20 @@ async def load_variable_data(
         e.variable_id = variable_id
         raise
     configuration = {}
-    configuration_name = f'{variable_id}.configuration'
-    if path.endswith('.dictionary'):
-        value_by_id = variable_data[DATA_VALUE]
-        variable_data = load_variable_data_from(value_by_id, variable_id)
-        v = value_by_id.get(configuration_name, {})
-        if isinstance(v, dict):
-            configuration.update(v)
-        else:
-            L.error(f'configuration must be a dictionary; {variable_id=}')
-    configuration_path = join(folder, configuration_name)  # noqa: PTH118
+    configuration_path = join(folder, variable.configuration_name)  # noqa: PTH118
     if with_configuration_path and await is_existing_path(configuration_path):
+        configuration.update(
+                )
         try:
-            configuration.update(await load_raw_json(configuration_path))
+            d = await load_raw_json(configuration_path)
         except (DiskError, ParsingError) as e:
             L.error(e)
+        if isinstance(d, dict):
+            configuration.update(d)
+        else:
+            L.error(
+                'configuration must be a dictionary; '
+                f'path="{redact_path(configuration_path)}"')
     view = LoadableVariableView.get_from(variable)
     if DATA_VALUE in variable_data:
         variable_data[DATA_VALUE] = await view.parse(variable_data[DATA_VALUE])

@@ -303,13 +303,12 @@ output:
       configuration:
         link-text: report
         file-name: report.pdf
-    # If the variable path is `variables.dictionary`, you can also configure
-    # the view dynamically by saving the configuration under the key
-    # `{variable_id}.configuration` directly inside `variables.dictionary`;
-    # for example, configure a checkbox dynamically by writing
-    # `{"options": [{"value": "a"}, {"value": "b"}, {"value": "c"}]}`
-    # under the key `building_type.configuration` in `variables.dictionary`;
-    # note that the variable will render as input because `mode == input`
+    # Render a form dynamically by setting `mode == input` for form variables;
+    # configure form variables by writing `{variable_id}.configuration`;
+    # for example, writing
+    # `{"options": [{"value": "a"}, {"value": "b"}, {"value": "c"}]}` to
+    # `building_type.configuration` in the output folder will update the
+    # checkbox options accordingly
     - id: building_type
       view: checkbox
       path: variables.dictionary
