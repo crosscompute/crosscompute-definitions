@@ -60,13 +60,12 @@ class LoadableVariableView:
     def parse_configuration_safely(self, c, w):
         if isinstance(c, dict):
             try:
-                configuration = self.parse_configuration(c)
+                return self.parse_configuration(c)
             except CrossComputeConfigurationError as e:
                 L.error(f'variable configuration parse failed during {w}: {e}')
         else:
             L.error('variable configuration must be a dictionary')
-            configuration = None
-        return configuration
+        return None
 
     def parse_configuration(self, c):
         return c

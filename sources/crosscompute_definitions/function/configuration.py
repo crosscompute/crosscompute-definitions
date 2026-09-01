@@ -503,6 +503,9 @@ async def validate_scripts(d):
     script_maps = get_maps(d, 'scripts')
     script_definitions = [await ScriptDefinition.load(
         _, tool_definition=d) for _ in script_maps]
+    if 'output' in d and not script_definitions:
+        x = 'no scripts found; define at least one script'
+        raise CrossComputeConfigurationError(x)
     return {'script_definitions': script_definitions}
 
 
