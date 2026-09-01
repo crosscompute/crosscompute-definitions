@@ -1015,7 +1015,7 @@ async def parse_data_by_id(data_by_id, variable_definitions):
         variable_value = variable_data[DATA_VALUE]
         variable_view = LoadableVariableView.get_from(variable_definition)
         try:
-            variable_value = await variable_view.parse(variable_value)
+            variable_value = await variable_view.parse_value(variable_value)
         except CrossComputeDataError as e:
             e.variable_id = variable_id
             raise
