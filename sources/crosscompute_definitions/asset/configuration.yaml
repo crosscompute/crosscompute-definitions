@@ -1,8 +1,6 @@
 ---
-# Examples: https://github.com/crosscompute/crosscompute-examples
 # Forum: https://forum.crosscompute.com/t/configuration-file-design/235
-# Gallery: https://crosscompute.net
-# Documentation: https://docs.crosscompute.com
+# Examples: https://github.com/crosscompute/crosscompute-examples
 
 # protocol version determines how this file is interpreted (required)
 crosscompute: 1.0.0
