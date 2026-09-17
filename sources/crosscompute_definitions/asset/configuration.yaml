@@ -18,7 +18,7 @@ description: Improve health, safety, quality of life in our communities
 # version should increment after you make changes to your tool
 version: 0.0.0
 
-# copyrights declare who owns this tool or kit
+# copyrights declare who owns this tool
 copyrights:
   - name: CrossCompute Inc.
     slug: crosscompute
@@ -48,37 +48,49 @@ network:
     - uri: https://example.com/peers.yaml
     - path: peers.yaml
 
-# prices specifies how you want to price your tool or kit
+# prices specify how you want to price your kit
 prices:
   # tier is the name of your price tier
-  # account is where the customer sends your subscription payment
-  # period is how often the customer needs to send payment
-  # amount is how much the customer needs to send
-  # currency is the ISO 4217 code or cryptocurrency abbreviation
-  # expression determines when this price tier is applicable
+  # period sets the subscription terms
+  # amount sets the subscription amount in credits
+  # tools list what the user can access during the subscription
+  - tier: trial
+    amount: 0
+    period:
+      unit: hour
+      count: 3
+      recurring: false
+    tools:
+      - slug: launch-platform
+        variables:
+          - id: machine_size
+            options:
+              - value: medium
   - tier: standard
-    account: nano_abc
+    amount: 150
     period:
       unit: month
-      count: 1
+      count: 3
       recurring: true
-    amount: 100
-    currency: xno
-  - tier: standard
-    account: nano_abc
-    period:
-      unit: year
-      count: 1
-      recurring: true
-    amount: 1000
-    currency: xno
+    tools:
+      - slug: launch-platform
+        variables:
+          - id: machine_size
+            options:
+              - value: medium
   - tier: premium
-    account: nano_abc
-    # missing or empty period means pay-per-use
+    amount: 300
     period:
-    amount: 10
-    currency: xno
-    expression: age >= 18
+      unit: month
+      count: 3
+      recurring: true
+    tools:
+      - slug: launch-platform
+        variables:
+          - id: machine_size
+            options:
+              - value: medium
+              - value: large
 
 # tools let you include other tools and define a kit
 tools:
@@ -546,11 +558,6 @@ execution:
     - id: EXAMPLE_RUN_KEY_B
       stage: run
       target: environment
-  # concurrency defines how your presets run;
-  # thread runs each preset as a separate thread;
-  # process runs each preset as a separate process;
-  # none runs each preset one at a time
-  concurrency: process
   # schedule specifies when to run the scripts;
   # lazy runs only while the result is being viewed
   schedule: 20250611-0500 daily lazy
